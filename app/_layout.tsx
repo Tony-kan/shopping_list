@@ -12,11 +12,23 @@ import "react-native-reanimated";
 import "./global.css";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import * as SQLite from "expo-sqlite";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import { usersTable } from "@/db/schema";
+import migrations from "../drizzle/migrations";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+const shopping_list_db = SQLite.openDatabaseSync("shopping_list.db");
+
+const db = drizzle(shopping_list_db);
 export default function RootLayout() {
+  useDrizzleStudio(db);
+  const { success, error } = useMigrations(db, migrations);
+
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -27,6 +39,21 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  (async () => {
+    db.delete(usersTable);
+
+    await db.insert(usersTable).values([
+      {
+        name: "John",
+        age: 30,
+        email: "john@example.com",
+      },
+    ]);
+
+    const users = await db.select().from(usersTable).all();
+    console.log(JSON.stringify(users, null, 2));
+  })();
 
   if (!loaded) {
     return null;
