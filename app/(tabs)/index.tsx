@@ -1,11 +1,33 @@
-import { Image, StyleSheet, Platform, View, Text } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Platform,
+  View,
+  Text,
+  Pressable,
+  useColorScheme,
+} from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useSQLiteContext } from "expo-sqlite";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 
 export default function HomeScreen() {
+  const db = useSQLiteContext();
+  // const drizzleDb = drizzle(db);
+  useDrizzleStudio(db);
+  const color = useColorScheme();
+  const onChangeMode = () => {
+    // useColorScheme() === "light" ? "dark" : "light";
+    // console.log("mode changed");
+    console.log("mode changed");
+    console.log("Color scheme: ", color);
+    color === "light" ? "dark" : "light";
+  };
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -17,6 +39,14 @@ export default function HomeScreen() {
       }
     >
       <ThemedView style={styles.titleContainer}>
+        <Pressable
+          onPress={onChangeMode}
+          className="dark:bg-white bg-orange-500 p-2 rounded-lg"
+        >
+          <ThemedText type="subtitle" className="font-extrabold">
+            Change Mode
+          </ThemedText>
+        </Pressable>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>

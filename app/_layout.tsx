@@ -7,7 +7,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import "react-native-reanimated";
 import "./global.css";
 
@@ -18,15 +18,21 @@ import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { usersTable } from "@/db/schema";
 import migrations from "../drizzle/migrations";
+import { ActivityIndicator } from "react-native";
+import { SQLiteProvider, openDatabaseAsync } from "expo-sqlite";
+
+export const DATABASE_NAME = "shopping_list";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const shopping_list_db = SQLite.openDatabaseSync("shopping_list.db");
+// const shopping_list_db = SQLite.openDatabaseSync("shopping_list.db");
 
-const db = drizzle(shopping_list_db);
+// const db = drizzle(shopping_list_db);
 export default function RootLayout() {
-  useDrizzleStudio(db);
+  const expoDB = openDatabaseAsync(DATABASE_NAME);
+  const db = drizzle(expoDB);
+  // useDrizzleStudio(db);
   const { success, error } = useMigrations(db, migrations);
 
   const colorScheme = useColorScheme();
@@ -61,11 +67,19 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <Suspense fallback={<ActivityIndicator size="large" />}>
+        <SQLiteProvider
+          databaseName="shopping_list.db"
+          options={{ enableChangeListener: true }}
+          useSuspense
+        >
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </SQLiteProvider>
+      </Suspense>
     </ThemeProvider>
   );
 }
