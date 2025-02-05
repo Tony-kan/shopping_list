@@ -8,7 +8,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
-export const users = sqliteTable(
+export const usersTable = sqliteTable(
   "users",
   {
     id: int().primaryKey({ autoIncrement: true }),
@@ -21,13 +21,13 @@ export const users = sqliteTable(
   (table) => [uniqueIndex("users_email_idx").on(table.email)]
 );
 
-export const shoppingLists = sqliteTable(
+export const shoppingListsTable = sqliteTable(
   "shopping_lists",
   {
     id: int().primaryKey({ autoIncrement: true }),
     name: text().notNull(),
     description: text(),
-    userId: int("user_id").references((): AnySQLiteColumn => users.id),
+    userId: int("user_id").references((): AnySQLiteColumn => usersTable.id),
     createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
     updatedAt: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
   },
@@ -38,7 +38,7 @@ export const shoppingLists = sqliteTable(
   // })
 );
 
-export const items = sqliteTable(
+export const itemsTable = sqliteTable(
   "items",
   {
     id: int().primaryKey({ autoIncrement: true }),
@@ -47,7 +47,7 @@ export const items = sqliteTable(
     quantity: int().notNull(),
     unitPrice: real("unit_price").notNull(),
     shoppingListId: int("shopping_list_id").references(
-      (): AnySQLiteColumn => shoppingLists.id
+      (): AnySQLiteColumn => shoppingListsTable.id
     ),
     createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
     updatedAt: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
@@ -58,18 +58,18 @@ export const items = sqliteTable(
   // })
 );
 
-export const categories = sqliteTable("categories", {
+export const categoriesTable = sqliteTable("categories", {
   id: int().primaryKey({ autoIncrement: true }),
   name: text().notNull(),
   description: text(),
 });
 
-export const itemCategories = sqliteTable(
+export const itemCategoriesTable = sqliteTable(
   "item_categories",
   {
-    itemId: int("item_id").references((): AnySQLiteColumn => items.id),
+    itemId: int("item_id").references((): AnySQLiteColumn => itemsTable.id),
     categoryId: int("category_id").references(
-      (): AnySQLiteColumn => categories.id
+      (): AnySQLiteColumn => categoriesTable.id
     ),
   },
   (table) => [
@@ -81,11 +81,11 @@ export const itemCategories = sqliteTable(
   // })
 );
 // export type User = typeof users.$inferSelect;
-export type User = typeof users.$inferSelect;
-export type ShoppingList = typeof shoppingLists.$inferSelect;
-export type Item = typeof items.$inferSelect;
-export type Category = typeof categories.$inferSelect;
-export type ItemCategory = typeof itemCategories.$inferSelect;
+export type User = typeof usersTable.$inferSelect;
+export type ShoppingList = typeof shoppingListsTable.$inferSelect;
+export type Item = typeof itemsTable.$inferSelect;
+export type Category = typeof categoriesTable.$inferSelect;
+export type ItemCategory = typeof itemCategoriesTable.$inferSelect;
 
 // Here's a proposed database design for a shopping list mobile app:
 // Entities and Attributes

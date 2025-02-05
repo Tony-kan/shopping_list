@@ -31,6 +31,7 @@ SplashScreen.preventAutoHideAsync();
 // const db = drizzle(shopping_list_db);
 export default function RootLayout() {
   const expoDB = openDatabaseAsync(DATABASE_NAME);
+
   const db = drizzle(expoDB);
   // useDrizzleStudio(db);
   const { success, error } = useMigrations(db, migrations);
@@ -52,8 +53,10 @@ export default function RootLayout() {
     await db.insert(usersTable).values([
       {
         name: "John",
-        age: 30,
+        username: "Cyberwizard",
+        age: 24,
         email: "john@example.com",
+        password: "password",
       },
     ]);
 
